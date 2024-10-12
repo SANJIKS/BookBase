@@ -1,5 +1,7 @@
 from rest_framework import viewsets, mixins
 from django.http import Http404
+
+from books.permissions import IsAuthenticatedAndPurchased
 from .models import Book, Page
 from .serializers import BookSerializer, PageDetailSerializer
 
@@ -10,6 +12,7 @@ class BookViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gen
 class PageDetailView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Page.objects.all()
     serializer_class = PageDetailSerializer
+    permission_classes = [IsAuthenticatedAndPurchased]
 
     def get_object(self):
         book_id = self.kwargs['book_id']
