@@ -18,7 +18,7 @@ services:
       - ./static_volume:/app/static
       - ./media_volume:/app/media
     ports:
-      - "8002:8000"
+      - "${API_PORT}:8000"
     env_file:
       - .env
     command: gunicorn --access-logfile - --workers 3 --bind 0.0.0.0:8000 core.wsgi:application
