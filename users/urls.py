@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MeView, PinCodeVerificationView, RegistrationView, CustomUserViewSet, CustomTokenObtainPairView, CustomTokenRefreshView, CustomTokenVerifyView, LoginView
+from .views import MeView, PasswordLoginView, PinCodeVerificationView, RegistrationView, CustomUserViewSet, CustomTokenObtainPairView, CustomTokenRefreshView, CustomTokenVerifyView, LoginView
 
 urlpatterns = [
     path('register/', RegistrationView.as_view(), name='register'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('jwt/verify/', CustomTokenVerifyView.as_view(), name="jwt-verify"),
     path('pin/verify/', PinCodeVerificationView.as_view(), name='verify-pin'),
     path('login/', LoginView.as_view(), name='login-view'),
+    path('password_login/', PasswordLoginView.as_view(), name='password-login-view')
 ]

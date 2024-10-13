@@ -1,4 +1,5 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser, PhoneVerificationCode
@@ -32,7 +33,8 @@ class CustomUserPatchSerializer(serializers.ModelSerializer):
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['phone_number', 'name']
+        fields = ['phone_number', 'name', 'password']
+        write_only_fields = ('password',)
 
     def validate_phone_number(self, value):
         try:
@@ -96,3 +98,25 @@ class PinCodeVerificationSerializer(serializers.Serializer):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
+    
+class PasswordLoginSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+
+        if phone_number and password:
+            user = authenticate(phone_number=phone_number, password=password)
+            if user:
+                if not user.is_active:
+                    raise serializers.ValidationError("Аккаунт не активирован.")
+                return {
+                    'refresh': str(RefreshToken.for_user(user)),
+                    'access': str(RefreshToken.for_user(user).access_token)
+                }
+            else:
+                raise serializers.ValidationError("Неверный телефон или пароль.")
+        else:
+            raise serializers.ValidationError("Необходимо указать телефон и пароль.")

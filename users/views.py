@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from .models import PhoneVerificationCode
 from decouple import config
-from .serializers import LoginSerializer, PinCodeVerificationSerializer, RegistrationSerializer, CustomUserSerializer, CustomUserPatchSerializer
+from .serializers import LoginSerializer, PasswordLoginSerializer, PinCodeVerificationSerializer, RegistrationSerializer, CustomUserSerializer, CustomUserPatchSerializer
 
 
 User = get_user_model()
@@ -49,6 +49,7 @@ class RegistrationView(APIView):
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
             name = serializer.validated_data['name']
+            password = serializer.validated_data['password']
 
             try:
                 user = User.objects.get(phone_number=phone_number)
@@ -65,7 +66,7 @@ class RegistrationView(APIView):
                 user = User.objects.create_user(
                     phone_number=phone_number,
                     name=name,
-                    password=None
+                    password=password
                 )
                 verification_code = PhoneVerificationCode.objects.create(user=user)
                 verification_code.generate_and_send_code()
@@ -160,3 +161,13 @@ class MeView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class PasswordLoginView(APIView):
+    serializer_class = PasswordLoginSerializer
+
+    @swagger_auto_schema(operation_summary='Логин через пароль', operation_description='Эндпоинт для логина с паролем', request_body=PasswordLoginSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
