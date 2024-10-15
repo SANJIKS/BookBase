@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Page
+from .models import Book, Page, Receipt, UserBookAccess
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +26,9 @@ class PageDetailSerializer(serializers.ModelSerializer):
     def get_next_page(self, obj):
         next_page = Page.objects.filter(book=obj.book, number=obj.number + 1).first()
         return next_page.number if next_page else None
+
+
+class ReceiptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receipt
+        fields = ['image', 'book']

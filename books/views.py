@@ -1,9 +1,15 @@
 from rest_framework import viewsets, mixins
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import Http404
 
-from books.permissions import IsAuthenticatedAndPurchased
-from .models import Book, Page
-from .serializers import BookSerializer, PageDetailSerializer
+from books.permissions import IsPurchased
+from .models import Book, Page, Receipt
+from .serializers import BookSerializer, PageDetailSerializer, ReceiptSerializer
+from .utils import send_receipt_to_moderator
 
 class BookViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Book.objects.all()
@@ -12,7 +18,7 @@ class BookViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gen
 class PageDetailView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Page.objects.all()
     serializer_class = PageDetailSerializer
-    permission_classes = [IsAuthenticatedAndPurchased]
+    permission_classes = [IsAuthenticated, IsPurchased]
 
     def get_object(self):
         book_id = self.kwargs['book_id']
@@ -25,3 +31,29 @@ class PageDetailView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
                 raise Http404("Нет страниц для этой книги.")
         
         return page
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.check_object_permissions(request, instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+
+class ReceiptViewSet(viewsets.ModelViewSet):
+    queryset = Receipt.objects.all()
+    serializer_class = ReceiptSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        receipt = serializer.save(user=request.user)
+
+        send_receipt_to_moderator(receipt)
+
+        return Response({"message": "Чек загружен, ожидайте подтверждения."}, status=status.HTTP_201_CREATED)
+    
+
+# class ConfirmPayment(APIView):
+#     def post
