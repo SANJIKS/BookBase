@@ -6,6 +6,7 @@ class Book(models.Model):
     title = models.CharField(max_length=120, null=True, blank=True)
     cover = models.ImageField(upload_to='books/covers/', null=True, blank=True)
     author = models.CharField(max_length=120, null=True, blank=True)
+    description = models.CharField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} by {self.author}" if self.title else "Untitled Book"
