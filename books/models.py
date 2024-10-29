@@ -13,7 +13,7 @@ class Book(models.Model):
 
 class Page(models.Model):
     book = models.ForeignKey(Book, null=True, on_delete=models.SET_NULL, related_name='pages')
-    content = models.ImageField(upload_to='books/content/', null=True, blank=True)
+    content = models.FileField(upload_to='books/content/', null=True, blank=True)
     number = models.PositiveIntegerField(default=0)
 
     def __str__(self):
