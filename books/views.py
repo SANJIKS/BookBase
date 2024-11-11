@@ -70,3 +70,20 @@ class ReceiptViewSet(viewsets.ModelViewSet):
 
 # class ConfirmPayment(APIView):
 #     def post
+
+class BookPagesListView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, book_id):
+        user = request.user
+        if not UserBookAccess.objects.filter(user=user, book_id=book_id).exists():
+            return Response({"detail": "Access denied"}, status=403)
+
+        pages = Page.objects.filter(book_id=book_id).order_by('number')
+
+        page_links = {
+            page.number: page.content.url if page.content else None
+            for page in pages
+        }
+
+        return Response(page_links)

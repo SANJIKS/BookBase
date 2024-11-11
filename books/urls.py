@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AvailableBooksView, BookViewSet, PageDetailView, ReceiptViewSet
+from .views import AvailableBooksView, BookPagesListView, BookViewSet, PageDetailView, ReceiptViewSet
 
 urlpatterns = [
     path('books/', BookViewSet.as_view({'get': 'list'}), name='book-list'),
@@ -7,5 +7,6 @@ urlpatterns = [
     path('books/<int:pk>/', BookViewSet.as_view({'get': 'retrieve'}), name='book-detail'),
     path('books/<int:book_id>/pages/', PageDetailView.as_view({'get': 'retrieve'}), name='page-detail'),
     path('books/<int:book_id>/pages/<int:page_number>/', PageDetailView.as_view({'get': 'retrieve'}), name='page-number-detail'),
-    path('receipts/', ReceiptViewSet.as_view({'post': 'create'}), name='create-receipt')
+    path('receipts/', ReceiptViewSet.as_view({'post': 'create'}), name='create-receipt'),
+    path('books/<int:book_id>/pages/', BookPagesListView.as_view(), name='book-pages-list'),
 ]
