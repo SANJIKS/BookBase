@@ -11,6 +11,15 @@ class Book(models.Model):
     def __str__(self):
         return f"{self.title} by {self.author}" if self.title else "Untitled Book"
 
+
+class BonusBook(models.Model):
+    book = models.ForeignKey(Book, related_name='bonus_books', on_delete=models.CASCADE)
+    bonus_book = models.ForeignKey(Book, related_name='given_as_bonus', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.bonus_book.title} as bonus for {self.book.title}"
+
+
 class Page(models.Model):
     book = models.ForeignKey(Book, null=True, on_delete=models.SET_NULL, related_name='pages')
     content = models.FileField(upload_to='books/content/', null=True, blank=True)
@@ -37,3 +46,14 @@ class Receipt(models.Model):
 
     def __str__(self):
         return f"Receipt from {self.user} uploaded at {self.uploaded_at}"
+
+    def approve(self):
+        if not self.is_verified:
+            UserBookAccess.objects.create(user=self.user, book=self.book)
+
+            bonus_books = self.book.bonus_books.all()
+            for bonus in bonus_books:
+                UserBookAccess.objects.create(user=self.user, book=bonus.bonus_book)
+
+            self.is_verified = True
+            self.save()

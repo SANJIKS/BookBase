@@ -22,6 +22,13 @@ services:
     env_file:
       - .env
     command: gunicorn --access-logfile - --workers 3 --bind 0.0.0.0:8000 core.wsgi:application
+
+  bot:
+    build: ./Dockerfile.bot
+    env_file:
+      - .env
+    restart: always
+  
   
 volumes:
   static_volume:
