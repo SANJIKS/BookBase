@@ -71,6 +71,8 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     
     @action(methods=['POST'], detail=True)
     def confirm_receipt(self, request, pk):
+        print(pk)
+        print(Receipt.objects.filter(id=pk).exists())
         receipt = get_object_or_404(Receipt, id=pk)
         receipt.approve()
         return Response({'message': 'Чек подтвержден!'}, status=status.HTTP_200_OK)
