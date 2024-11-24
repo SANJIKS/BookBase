@@ -67,7 +67,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action == 'confirm_receipt':
-            return None
+            return [None]
         return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
