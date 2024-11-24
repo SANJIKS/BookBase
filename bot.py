@@ -15,9 +15,9 @@ bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher()
 
 
-@dp.callback_query(F.data.startswith('confirm'))
+@dp.callback_query(F.data.startswith('confirm_'))
 async def approve_receipt(call: CallbackQuery):
-    receipt_id = call.split('_')[1]
+    receipt_id = call.data.split('_')[1]
     await call.message.answer(
         f"Аххххххххххахахах сигма\n"
         f"Вот айди твоего чека: {receipt_id}\n"
@@ -25,7 +25,7 @@ async def approve_receipt(call: CallbackQuery):
     )
 
 
-@dp.callback_query(F.data.startswith('reject'))
+@dp.callback_query(F.data.startswith('reject_'))
 async def reject_receipt(call: CallbackQuery):
     await call.message.answer("🙄")
 
