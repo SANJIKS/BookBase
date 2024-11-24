@@ -5,7 +5,9 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import action
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 
 from books.permissions import IsPurchased
 from .models import Book, Page, Receipt, UserBookAccess
@@ -67,9 +69,12 @@ class ReceiptViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Чек загружен, ожидайте подтверждения."}, status=status.HTTP_201_CREATED)
     
+    @action(methods=['POST'], detail=True)
+    def confirm_receipt(self, request, pk):
+        receipt = get_object_or_404(Receipt, id=pk)
+        receipt.approve()
+        return Response({'message': 'Чек подтвержден!'}, status=status.HTTP_200_OK)
 
-# class ConfirmPayment(APIView):
-#     def post
 
 class BookPagesListView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
