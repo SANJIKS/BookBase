@@ -5,6 +5,7 @@ from users.models import CustomUser
 class Book(models.Model):
     title = models.CharField(max_length=120, null=True, blank=True)
     cover = models.ImageField(upload_to='books/covers/', null=True, blank=True)
+    content = models.FileField(upload_to='books/content/', null=True, blank=True)
     author = models.CharField(max_length=120, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
 
