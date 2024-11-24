@@ -3,6 +3,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.filters import Command
 from decouple import config
 
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +30,7 @@ async def reject_receipt(call: CallbackQuery):
     await call.message.answer("🙄")
 
 
-@dp.message(commands=["start"])
+@dp.message(Command('start'))
 async def start_handler(message: types.Message):
     await message.answer('Salam Aleykum')
 
