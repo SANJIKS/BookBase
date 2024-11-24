@@ -30,6 +30,7 @@ services:
     env_file:
       - .env
     restart: always
+    command: python3 bot.py
   
   
 volumes:
