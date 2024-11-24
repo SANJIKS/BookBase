@@ -21,7 +21,7 @@ dp = Dispatcher()
 @dp.callback_query(F.data.startswith('confirm_'))
 async def approve_receipt(call: CallbackQuery):
     receipt_id = call.data.split('_')[1]
-    response = requests.post(BACKEND_URL + f'/receipts/confirm/{receipt_id}/')
+    response = requests.post(BACKEND_URL + f'/books/receipts/confirm/{receipt_id}/')
     if response.status_code == 404:
         await call.message.answer('Ошибка. \nЧек не найден.')
     elif response.status_code == 200:
