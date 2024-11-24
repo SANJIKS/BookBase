@@ -24,7 +24,9 @@ services:
     command: gunicorn --access-logfile - --workers 3 --bind 0.0.0.0:8000 core.wsgi:application
 
   bot:
-    build: ./Dockerfile.bot
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
     env_file:
       - .env
     restart: always
