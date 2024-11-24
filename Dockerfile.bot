@@ -1,0 +1,10 @@
+FROM python:3.10-slim
+
+RUN pip install --no-cache-dir telebot python-decouple requests
+
+COPY bot.py /app/bot.py
+COPY .env /app/.env
+
+WORKDIR /app
+
+CMD ["python", "main.py"]
