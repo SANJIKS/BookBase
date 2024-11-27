@@ -9,11 +9,13 @@ INFOBIP_API_KEY = config("INFOBIP_API_KEY")
 
 url = f"https://{INFOBIP_URL}/sms/2/text/advanced"
 
-def send_sms(phone_number, text):
+def send_sms(phone_number, pin):
+    text = f"Код подтверждения: {pin}\nЕсли вы не запрашивали код, просто проигнорируйте это сообщение."
+    
     payload = {
         "messages": [
-            {
-                "from": "Mobile Books",
+            {   
+                "from": "Адалды Танда",
                 "destinations": [
                     {
                         "to": phone_number
@@ -31,5 +33,4 @@ def send_sms(phone_number, text):
     }
 
     response = requests.post(url, headers=headers, json=payload)
-    print(response.text)
     return response.text
