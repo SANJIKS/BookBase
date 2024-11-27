@@ -32,5 +32,6 @@ def send_sms(phone_number, pin):
         'Accept': 'application/json'
     }
 
-    response = requests.post(url, headers=headers, json=payload)
-    return response.text
+    # response = requests.post(url, headers=headers, json=payload)
+    # return response.text
+    print("AHAHAHHA")
