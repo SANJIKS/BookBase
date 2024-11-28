@@ -24,3 +24,42 @@ def send_receipt_to_moderator(receipt):
             markup.add(confirm_button, reject_button)
 
             bot.send_photo(chat_id, photo, caption=message, reply_markup=markup)
+
+import PyPDF2
+from pdf2image import convert_from_path
+from io import BytesIO
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from .models import Book, Page
+
+def add_pdf_as_book(pdf_file):
+    # Чтение PDF файла
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    num_pages = len(pdf_reader.pages)
+    
+    # Создание книги
+    book = Book.objects.create(
+        title=pdf_file.name,  # Можно взять имя файла как название
+        content=pdf_file       # Сохраняем сам файл PDF
+    )
+    
+    # Преобразуем страницы в изображения и сохраняем их как отдельные страницы
+    pages = convert_from_path(pdf_file, 300)  # 300 - разрешение
+    for page_number, page in enumerate(pages, start=1):
+        # Сохраняем страницу как изображение
+        image_io = BytesIO()
+        page.save(image_io, 'PNG')
+        image_io.seek(0)
+        
+        # Сохраняем изображение на диск
+        file_name = f'{book.title}_page_{page_number}.png'
+        page_file = ContentFile(image_io.read(), name=file_name)
+        
+        # Создаем запись для страницы
+        Page.objects.create(
+            book=book,
+            content=page_file,
+            number=page_number
+        )
+
+    return book
