@@ -32,15 +32,18 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from .models import Book, Page
 
+from django.core.files.base import ContentFile
+
 def add_pdf_as_book(pdf_file):
     # Чтение PDF файла
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     num_pages = len(pdf_reader.pages)
     
     # Создание книги
+    pdf_content = ContentFile(pdf_file.read())  # Читаем и оборачиваем PDF в ContentFile
     book = Book.objects.create(
         title=pdf_file.name,  # Можно взять имя файла как название
-        content=pdf_file       # Сохраняем сам файл PDF
+        # content=pdf_content   # Сохраняем сам файл PDF через ContentFile
     )
     
     # Преобразуем страницы в изображения и сохраняем их как отдельные страницы
