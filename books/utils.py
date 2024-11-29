@@ -40,7 +40,7 @@ def add_pdf_as_book(pdf_file):
     
     pdf_content = ContentFile(pdf_file.read())
     book = Book.objects.create(
-        title=pdf_file.name,
+        title=pdf_file.name.split('.')[0],
         content=pdf_content
     )
     
