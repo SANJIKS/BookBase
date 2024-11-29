@@ -22,20 +22,23 @@ class BookAdmin(admin.ModelAdmin):
 
     def process_pdf(self, book):
         pdf_path = book.content.path
+        total_pages = len(convert_from_path(pdf_path, 1))
 
-        images = convert_from_path(pdf_path, 300)
+        chunk_size = 10
+        for i in range(0, total_pages, chunk_size):
+            images = convert_from_path(pdf_path, first_page=i + 1, last_page=min(i + chunk_size, total_pages))
 
-        for i, image in enumerate(images):
-            image_path = f'book_pages/{book.id}_page_{i + 1}.png'
-            image.save(image_path)
+            for j, image in enumerate(images):
+                image_path = f'book_pages/{book.id}_page_{i + j + 1}.png'
+                image.save(image_path)
 
-            page = Page.objects.create(
-                book=book,
-                number=i + 1,
-                content=default_storage.save(image_path, ContentFile(open(image_path, 'rb').read()))
-            )
+                page = Page.objects.create(
+                    book=book,
+                    number=i + j + 1,
+                    content=default_storage.save(image_path, ContentFile(open(image_path, 'rb').read()))
+                )
 
-            os.remove(image_path)
+                os.remove(image_path)
 
 
 admin.site.register([Page, Receipt, UserBookAccess, BonusBook])
