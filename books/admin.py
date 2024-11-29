@@ -5,7 +5,6 @@ import os
 from django.contrib import admin
 from .models import Book, Page, Receipt, UserBookAccess, BonusBook
 
-
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'cover', 'content', 'description')
@@ -25,16 +24,17 @@ class BookAdmin(admin.ModelAdmin):
         total_pages = len(convert_from_path(pdf_path, 1))
 
         chunk_size = 10
-        book_pages_dir = '/app/book_pages'
-        
-        if not os.path.exists(book_pages_dir):
-            os.makedirs(book_pages_dir)
+
+        book_pages_dir = 'books/book_pages'
+        if not os.path.exists(os.path.join(default_storage.location, book_pages_dir)):
+            os.makedirs(os.path.join(default_storage.location, book_pages_dir))
 
         for i in range(0, total_pages, chunk_size):
             images = convert_from_path(pdf_path, first_page=i + 1, last_page=min(i + chunk_size, total_pages))
 
             for j, image in enumerate(images):
-                image_path = f'{book_pages_dir}/{book.id}_page_{i + j + 1}.png'
+                image_filename = f'{book.id}_page_{i + j + 1}.png'
+                image_path = os.path.join(book_pages_dir, image_filename)
                 image.save(image_path)
 
                 page = Page.objects.create(
@@ -44,6 +44,5 @@ class BookAdmin(admin.ModelAdmin):
                 )
 
                 os.remove(image_path)
-
 
 admin.site.register([Page, Receipt, UserBookAccess, BonusBook])
