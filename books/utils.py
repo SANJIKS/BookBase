@@ -26,43 +26,41 @@ def send_receipt_to_moderator(receipt):
             bot.send_photo(chat_id, photo, caption=message, reply_markup=markup)
 
 import PyPDF2
+import tempfile
 from pdf2image import convert_from_path
 from io import BytesIO
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from .models import Book, Page
 
 from django.core.files.base import ContentFile
 
 def add_pdf_as_book(pdf_file):
-    # Чтение PDF файла
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     num_pages = len(pdf_reader.pages)
     
-    # Создание книги
-    pdf_content = ContentFile(pdf_file.read())  # Читаем и оборачиваем PDF в ContentFile
+    pdf_content = ContentFile(pdf_file.read())
     book = Book.objects.create(
-        title=pdf_file.name,  # Можно взять имя файла как название
-        # content=pdf_content   # Сохраняем сам файл PDF через ContentFile
+        title=pdf_file.name,
+        content=pdf_content
     )
     
-    # Преобразуем страницы в изображения и сохраняем их как отдельные страницы
-    pages = convert_from_path(pdf_file, 300)  # 300 - разрешение
+    with tempfile.NamedTemporaryFile(delete=False, mode='wb') as temp_pdf_file:
+        temp_pdf_file.write(pdf_file.read())
+        temp_pdf_file_path = temp_pdf_file.name
+    
+    pages = convert_from_path(temp_pdf_file_path, 300)
     for page_number, page in enumerate(pages, start=1):
-        # Сохраняем страницу как изображение
         image_io = BytesIO()
         page.save(image_io, 'PNG')
         image_io.seek(0)
         
-        # Сохраняем изображение на диск
         file_name = f'{book.title}_page_{page_number}.png'
         page_file = ContentFile(image_io.read(), name=file_name)
         
-        # Создаем запись для страницы
         Page.objects.create(
             book=book,
             content=page_file,
             number=page_number
         )
-
+    
     return book
