@@ -27,6 +27,7 @@ def send_receipt_to_moderator(receipt):
 
 import PyPDF2
 import tempfile
+import os
 from pdf2image import convert_from_path
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -38,29 +39,34 @@ def add_pdf_as_book(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     num_pages = len(pdf_reader.pages)
     
-    pdf_content = ContentFile(pdf_file.read())
-    book = Book.objects.create(
-        title=pdf_file.name.split('.')[0],
-        content=pdf_content
-    )
-    
-    with tempfile.NamedTemporaryFile(delete=False, mode='wb') as temp_pdf_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf_file:
         temp_pdf_file.write(pdf_file.read())
         temp_pdf_file_path = temp_pdf_file.name
-    
+
+    file_name = os.path.basename(pdf_file.name)
+    pdf_file.seek(0)
+    book_content = ContentFile(pdf_file.read(), name=file_name)
+
+    book = Book.objects.create(
+        title=file_name.split('.')[0],
+        content=book_content
+    )
+
     pages = convert_from_path(temp_pdf_file_path, 300)
     for page_number, page in enumerate(pages, start=1):
         image_io = BytesIO()
         page.save(image_io, 'PNG')
         image_io.seek(0)
         
-        file_name = f'{book.title}_page_{page_number}.png'
-        page_file = ContentFile(image_io.read(), name=file_name)
+        page_file_name = f"{book.title}_page_{page_number}.png"
+        page_file = ContentFile(image_io.read(), name=page_file_name)
         
         Page.objects.create(
             book=book,
             content=page_file,
             number=page_number
         )
-    
+
+    os.remove(temp_pdf_file_path)
+
     return book
