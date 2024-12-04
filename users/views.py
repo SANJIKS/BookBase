@@ -11,9 +11,9 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .models import PhoneVerificationCode
+from .models import PhoneVerificationCode, CustomUser
 from decouple import config
-from .serializers import LoginSerializer, PasswordLoginSerializer, PinCodeVerificationSerializer, RegistrationSerializer, CustomUserSerializer, CustomUserPatchSerializer
+from .serializers import LoginSerializer, PasswordLoginSerializer, PasswordResetConfirmSerializer, PasswordResetSerializer, PinCodeVerificationSerializer, RegistrationSerializer, CustomUserSerializer, CustomUserPatchSerializer, ResendVerificationCodeSerializer
 
 
 User = get_user_model()
@@ -171,3 +171,52 @@ class PasswordLoginView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
+class ResendVerificationCodeView(APIView):
+    @swagger_auto_schema(
+        operation_summary="Повторная отправка SMS",
+        operation_description="Эндпоинт для повторной отправки SMS кода подтверждения.",
+        request_body=ResendVerificationCodeSerializer
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = ResendVerificationCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.validated_data['phone_number']
+        user = CustomUser.objects.get(phone_number=phone_number)
+        verification_code = PhoneVerificationCode.objects.create(user=user)
+        verification_code.generate_and_send_code()
+        return Response({"detail": "Пин-код отправлен на номер телефона."}, status=status.HTTP_200_OK)
+
+
+class PasswordResetView(APIView):
+    @swagger_auto_schema(
+        operation_summary="Сброс пароля",
+        operation_description="Эндпоинт для отправки кода на номер телефона для сброса пароля.",
+        request_body=PasswordResetSerializer
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.validated_data['phone_number']
+        user = CustomUser.objects.get(phone_number=phone_number)
+        verification_code = PhoneVerificationCode.objects.create(user=user)
+        verification_code.generate_and_send_code()
+        return Response({"detail": "Код для сброса пароля отправлен на номер телефона."}, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmView(APIView):
+    @swagger_auto_schema(
+        operation_summary="Подтверждение сброса пароля",
+        operation_description="Эндпоинт для установки нового пароля с помощью кода подтверждения.",
+        request_body=PasswordResetConfirmSerializer
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.validated_data['phone_number']
+        new_password = serializer.validated_data['new_password']
+        user = CustomUser.objects.get(phone_number=phone_number)
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Пароль успешно изменен."}, status=status.HTTP_200_OK)

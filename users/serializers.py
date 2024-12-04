@@ -120,3 +120,48 @@ class PasswordLoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError("Неверный телефон или пароль.")
         else:
             raise serializers.ValidationError("Необходимо указать телефон и пароль.")
+        
+
+class ResendVerificationCodeSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+
+    def validate(self, data):
+        phone_number = data.get('phone_number')
+        try:
+            user = CustomUser.objects.get(phone_number=phone_number)
+            if user.is_active:
+                raise serializers.ValidationError("Пользователь уже активирован.")
+            return data
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Пользователь с таким номером телефона не найден.")
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+
+    def validate(self, data):
+        phone_number = data.get('phone_number')
+        try:
+            user = CustomUser.objects.get(phone_number=phone_number)
+            if not user.is_active:
+                raise serializers.ValidationError("Аккаунт не активирован.")
+            return data
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Пользователь с таким номером телефона не найден.")
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+    code = serializers.CharField()
+    new_password = serializers.CharField()
+
+    def validate(self, data):
+        phone_number = data.get('phone_number')
+        code = data.get('code')
+        try:
+            user = CustomUser.objects.get(phone_number=phone_number)
+            verification_code = PhoneVerificationCode.objects.filter(user=user).latest('created_at')
+            if not verification_code.verify_code(code):
+                raise serializers.ValidationError("Неверный код.")
+            return data
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Пользователь с таким номером телефона не найден.")
