@@ -80,8 +80,8 @@ class PinCodeVerificationSerializer(serializers.Serializer):
             raise serializers.ValidationError("Неверный номер телефона или код.")
 
         verification_code = PhoneVerificationCode.objects.filter(user=user).latest('created_at')
-        # if not verification_code.verify_code(code):
-        #     raise serializers.ValidationError("Неверный номер телефона или код.")
+        if not verification_code.verify_code(code):
+            raise serializers.ValidationError("Неверный номер телефона или код.")
 
         if not user.is_active:
             user.is_active = True
