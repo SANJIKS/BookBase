@@ -59,9 +59,14 @@ class RegistrationView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 else:
+                    user.name = name
+                    user.set_password(password)
+                    user.save()
+
                     verification_code = PhoneVerificationCode.objects.create(user=user)
                     verification_code.generate_and_send_code()
-                    return Response({"detail": "Пин-код отправлен на номер телефона."}, status=status.HTTP_200_OK)
+
+                    return Response({"detail": "Пользователь обновлен и пин-код отправлен на номер телефона."}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 user = User.objects.create_user(
                     phone_number=phone_number,
