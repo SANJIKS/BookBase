@@ -36,14 +36,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ['phone_number', 'name', 'password']
         write_only_fields = ('password',)
 
-    def validate_phone_number(self, value):
-        try:
-            user = CustomUser.objects.get(phone_number=value)
-            if user.is_active:
-                raise serializers.ValidationError("Пользователь с таким номером телефона уже существует и активирован.")
-        except CustomUser.DoesNotExist:
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number')
+
+        user = CustomUser.objects.filter(phone_number=phone_number).first()
+
+        if user and user.is_active:
+            raise serializers.ValidationError("Пользователь с таким номером телефона уже существует и активирован.")
+        
+        if user and not user.is_active:
             pass
-        return value
+        
+        return attrs
     
 
 class LoginSerializer(serializers.Serializer):
