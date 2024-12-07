@@ -30,11 +30,10 @@ class CustomUserPatchSerializer(serializers.ModelSerializer):
         fields = ['avatar', 'email', 'name', 'phone_number']
     
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['phone_number', 'name', 'password']
-        write_only_fields = ('password',)
+class RegistrationSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=12)
+    name = serializers.CharField(max_length=120)
+    password = serializers.CharField(write_only=True, max_length=128)
 
     def validate(self, attrs):
         phone_number = attrs.get('phone_number')
@@ -46,9 +45,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         
         if user and not user.is_active:
             pass
-        
+
         return attrs
-    
 
 class LoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
