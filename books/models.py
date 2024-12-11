@@ -8,6 +8,7 @@ class Book(models.Model):
     content = models.FileField(upload_to='books/content/', null=True, blank=True)
     author = models.CharField(max_length=120, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
+    lang = models.CharField(max_length=5, null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} by {self.author}" if self.title else "Untitled Book"
