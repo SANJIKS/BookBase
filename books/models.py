@@ -9,6 +9,7 @@ class Book(models.Model):
     author = models.CharField(max_length=120, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
     lang = models.CharField(max_length=5, null=True, blank=True)
+    price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.title} by {self.author}" if self.title else "Untitled Book"
