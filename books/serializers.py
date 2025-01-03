@@ -2,9 +2,14 @@ from rest_framework import serializers
 from .models import Book, Page, Receipt, UserBookAccess
 
 class BookSerializer(serializers.ModelSerializer):
+    length = serializers.SerializerMethodField()
+
     class Meta:
         model = Book
         fields = '__all__'
+
+    def get_length(self, obj):
+        return obj.pages.count()
 
 class PageSerializer(serializers.ModelSerializer):
     class Meta:
