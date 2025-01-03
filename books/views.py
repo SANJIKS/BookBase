@@ -98,8 +98,8 @@ class BookPagesListView(generics.GenericAPIView):
 
         page_links = {
             'length': pages.count(),
-            page.number: page.content.url if page.content else None
-            for page in pages
+            **{page.number: page.content.url if page.content else None
+            for page in pages}
         }
 
         return Response(page_links)
