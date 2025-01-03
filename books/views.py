@@ -97,6 +97,7 @@ class BookPagesListView(generics.GenericAPIView):
         pages = Page.objects.filter(book_id=book_id).order_by('number')
 
         page_links = {
+            'length': pages.count()
             page.number: page.content.url if page.content else None
             for page in pages
         }
